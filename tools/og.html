@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../public/app.css">
+<style>
+body{margin:0;width:1200px;height:630px;overflow:hidden;background:radial-gradient(circle at 15% 15%,#2a6249 0,#1f4d3a 45%,#143528 100%);color:#fffaf1;font-family:var(--sans)}
+.l{position:absolute;left:70px;top:80px;width:520px}
+.l .b{display:flex;align-items:center;gap:14px;font:700 30px var(--serif)}
+.l .b img{width:58px;height:58px;border-radius:14px;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
+.l h1{font:700 64px/1.05 var(--serif);margin:40px 0 22px;color:#fff}
+.l p{font-size:27px;line-height:1.35;color:#e7efe9;margin:0}
+.l .pill{display:inline-block;margin-top:34px;background:#d9aa3c;color:#143528;font-weight:800;font-size:24px;padding:12px 24px;border-radius:999px}
+.g{position:absolute;right:60px;top:60px;width:470px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:none;box-shadow:none;padding:0}
+.g::before{display:none}
+.door{cursor:default}
+.door .num{font-size:38px}.door.open .icon{font-size:34px}.door.open .num{font-size:18px}
+</style></head><body>
+<div class="l"><div class="b"><img src="../public/icon.svg">Advent Together</div>
+<h1>The advent calendar your group fills together</h1>
+<p>Everyone hides a surprise behind a door. One opens each day, for everyone.</p>
+<div class="pill">Free · no sign-up · no app</div></div>
+<div class="board g">
+<div class="door open"><span class="icon">🎵</span><span class="num">1</span></div>
+<div class="door taken"><span class="num">9</span></div>
+<div class="door open"><span class="icon">📸</span><span class="num">3</span></div>
+<div class="door"><span class="num">14</span></div>
+<div class="door taken"><span class="num">6</span></div>
+<div class="door open"><span class="icon">😂</span><span class="num">2</span></div>
+<div class="door today"><span class="num">5</span></div>
+<div class="door taken"><span class="num">11</span></div>
+<div class="door"><span class="num">20</span></div>
+<div class="door open"><span class="icon">🍪</span><span class="num">4</span></div>
+<div class="door taken"><span class="num">17</span></div>
+<div class="door"><span class="num">24</span></div>
+</div></body></html>

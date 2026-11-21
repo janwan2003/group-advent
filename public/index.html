@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Advent Together · a shared advent calendar your group fills together</title>
+<meta name="description" content="Make a free online advent calendar with your friends or family. Everyone claims a door and hides a surprise behind it. One door opens each day for the whole group. No sign-up, no app.">
+<link rel="canonical" href="https://pb-group-advent.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Advent Together">
+<meta property="og:title" content="Advent Together · a shared advent calendar your group fills together">
+<meta property="og:description" content="Everyone claims a door and hides a surprise behind it. One door opens each morning for the whole group. Free, no sign-up.">
+<meta property="og:url" content="https://pb-group-advent.pages.dev/">
+<meta property="og:image" content="https://pb-group-advent.pages.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="google-site-verification" content="g6R95T8-VFARk0PYhc-lkqete3o5OcxzkrFJ0B-vI4E" />
+<meta name="theme-color" content="#1f4d3a">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/app.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Advent Together","url":"https://pb-group-advent.pages.dev/","applicationCategory":"LifestyleApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"A shared online advent calendar that a group fills together: everyone claims a door, one door opens each day."}</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><img src="/icon.svg" alt="" width="32" height="32"><span>Advent Together</span></a>
+    <a class="btn ghost small" href="#make">Make a calendar</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pitch">
+        <h1>An advent calendar your whole group fills together</h1>
+        <p class="lead">Everyone claims a door and hides a surprise behind it: a message, a joke, a song, a recipe, an old photo. One door opens each morning for the whole group, and nobody sees what’s inside until then.</p>
+        <ul class="badges">
+          <li>Free</li><li>No sign-up</li><li>No app</li><li>Works in any group chat</li>
+        </ul>
+        <div class="board mini-board" aria-hidden="true" id="demo"></div>
+        <p class="small muted">Red dot: someone has hidden a surprise there. Gold: today’s door.</p>
+      </div>
+
+      <form class="card" id="make" novalidate>
+        <h2>Make your calendar</h2>
+        <p class="muted small" style="margin:0">Takes 20 seconds. You get one link to drop in the group chat.</p>
+        <label class="f" for="title">Name it</label>
+        <input type="text" id="title" maxlength="60" value="Our advent calendar" autocomplete="off">
+        <label class="f" id="typeLbl">What are you counting down to?</label>
+        <div class="choices" role="radiogroup" aria-labelledby="typeLbl">
+          <label class="choice"><input type="radio" name="preset" value="advent" checked><div><b>Christmas advent</b><span id="adventDates">24 doors, 1–24 December</span></div></label>
+          <label class="choice"><input type="radio" name="preset" value="twelve"><div><b>12-day countdown to Christmas</b><span id="twelveDates">12 doors, 13–24 December</span></div></label>
+          <label class="choice"><input type="radio" name="preset" value="custom"><div><b>Something else</b><span>A birthday, a trip, a wedding, a reunion</span></div></label>
+        </div>
+        <div id="customBox" class="hidden">
+          <div class="row">
+            <div><label class="f" for="bigDay">The big day <span class="hint">(last door)</span></label><input type="date" id="bigDay"></div>
+            <div><label class="f" for="days">Doors</label><select id="days"></select></div>
+          </div>
+        </div>
+        <label class="f" for="name">Your name <span class="hint">(what the group calls you)</span></label>
+        <input type="text" id="name" maxlength="30" autocomplete="given-name" placeholder="e.g. Sam">
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn block" type="submit" id="go">Create the calendar</button>
+        <p class="small muted center" style="margin:10px 0 0">No email, no account. Calendars delete themselves 60 days after the last door.</p>
+      </form>
+    </section>
+
+    <section class="steps" aria-label="How it works">
+      <div class="step"><div class="n">1</div><h3>Share one link</h3><p class="muted">Make the calendar and drop the link in your family or friends chat. The preview shows how many doors are already filled.</p></div>
+      <div class="step"><div class="n">2</div><h3>Everyone claims a door</h3><p class="muted">Friends open the link, type their name and hide something behind a door. Nobody else sees it until its day.</p></div>
+      <div class="step"><div class="n">3</div><h3>Open one a day, together</h3><p class="muted">Each morning a new door opens for everyone, with who it’s from. React, screenshot it, talk about it in the chat.</p></div>
+    </section>
+
+    <section class="faq narrow" aria-label="Questions">
+      <h2>Questions</h2>
+      <details><summary>Who can see what, and when?</summary><p>Before a door opens, the group only sees that it’s taken. What’s behind it, and who filled it, appear when the door opens at midnight in the calendar’s time zone. The person who filled a door can always see and edit their own until then.</p></details>
+      <details><summary>What if nobody fills a door?</summary><p>It still opens, with a small surprise from us: a joke, a question for the group or a tiny challenge. The calendar never has a blank day.</p></details>
+      <details><summary>Does everyone need to fill a door?</summary><p>No. Opening the doors takes one tap. Filling one is optional, and some people fill several.</p></details>
+      <details><summary>What can I put behind a door?</summary><p>A message, a joke, a song or video link, a recipe, a memory, a challenge for the group, and one photo.</p></details>
+      <details><summary>Can I start late?</summary><p>Yes. Doors that already opened show their surprise straight away, and everyone can still fill the doors that haven’t opened yet.</p></details>
+      <details><summary>Is it really free? Do I need an account?</summary><p>Free, no account, no email, no ads. You join a calendar with a name. Your browser remembers you, and you can copy a personal link to use it on another device.</p></details>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div><b>About:</b> Advent Together is a free shared advent calendar for groups.</div>
+    <div class="links"><a href="/privacy">Privacy</a><a href="#make">Make a calendar</a></div>
+  </footer>
+</div>
+<script type="module" src="/home.js"></script>
+</body>
+</html>

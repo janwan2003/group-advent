@@ -110,6 +110,17 @@ Verified 2026-11-21 (how):
   reactions, opened door not editable, wrap-up state) and **passed against production** (time-travel steps skipped
   because the hook is off in prod; confirmed by curl that `x-now` is ignored live).
 - Screenshots reviewed: home desktop/phone, calendar phone, editor phone, reveal phone, wrap desktop (`shots/`, not committed).
+Quality pass 2026-11-22 (how):
+- `tests/e2e/run.mjs` now also asserts: preview image < 300 KB, unknown URL returns 404, opened doors are not counted as
+  "still free" (18 of 24 on 5 Dec), the finished-calendar wording, and keyboard open/Escape returning focus to the door.
+  Passed locally (with time travel) and against production (commit 4af6dc1).
+- New `tests/e2e/a11y.mjs`: axe-core WCAG 2.1 A/AA + best-practice rules on 27 page states (home, privacy, 404, editor,
+  host/guest calendar, free/taken/opened/fallback sheets, mid-advent, after the last door; phone + desktop). It found 13
+  violations: heading order and door buttons whose accessible names didn't include their visible text. All fixed; it now
+  reports 0 locally and 0 on 15 states live.
+- Screenshots reviewed (`shots/`, not committed): home, calendar, editor, reveal, fallback, mid-advent, wrap, 404 at
+  390 px; home, calendar, wrap at 1280 px; GitHub Pages product page at both widths (all links 200, 0 console errors).
+- Not runnable here: WebKit (Safari engine). Playwright needs system libraries that only `sudo apt-get` installs (inbox).
 - Not covered: real iOS Safari or the WhatsApp/iMessage in-app browsers, a real WhatsApp preview fetch, HEIC photos
   from iPhones (the browser normally converts them; untested), load beyond a single Durable Object.
 
@@ -117,6 +128,8 @@ Verified 2026-11-21 (how):
 
 - 2026-11-21 (source: `GET https://pb-group-advent.pages.dev/api/stats`, after the e2e run deleted its own data):
   0 calendars, 0 creators, 0 joiners. Search Console: site added today, no data yet.
+- 2026-11-22 ~14:40 UTC (`/api/stats`): 0 calendars, 0 members, 0 joiners, 0 doors claimed. Search Console
+  (`scripts/gsc.py status`): sitemap still pending, 0 errors; search analytics 2026-10-25..11-22 has no rows.
 
 ## Next steps
 
@@ -124,10 +137,11 @@ Verified 2026-11-21 (how):
    first group; advent starts 2026-12-01.
 2. Check on a real phone inside WhatsApp's in-app browser: join, claim, photo upload from the iPhone camera roll, the
    preview text. Fix what breaks.
-3. Dynamic OG image per calendar (door grid with live state) for a stronger preview; "door of the day" share card image.
-4. Quality pass: Lighthouse/accessibility audit, keyboard flow in the sheet, more locales for date strings.
-5. Weekly metrics from `/api/stats` and Search Console (`python3 scripts/gsc.py status`).
-6. After 24 Dec: reposition the home page for birthdays, trips and weddings (custom countdown), and New Year.
+3. If the operator installs the WebKit libraries (inbox), run both e2e scripts in WebKit at 390 px with `CHROME` swapped for webkit.
+4. Dynamic OG image per calendar (door grid with live state) for a stronger preview; "door of the day" share card image.
+5. Remaining polish: a sticky save bar in the door editor on short phones, more locales for date strings.
+6. Weekly metrics from `/api/stats` and Search Console (`python3 scripts/gsc.py status`).
+7. After 24 Dec: reposition the home page for birthdays, trips and weddings (custom countdown), and New Year.
 
 ## Monetization plan
 
@@ -142,3 +156,4 @@ printable keepsake book of the finished calendar. Never paywall joining, opening
 - 2026-11-21 review: raised p3→p5. Advent starts 2026-12-01, 10 days from now: it must be live by ~25 Nov for groups to set it up, or the thesis waits a year. Build it next, as a one-session MVP.
 - 2026-11-21 builder: re-checked evidence (25Days, PollUnit, Advent Calendar Creator are publisher- or one-creator calendars; gap holds). D1 limit hit, so used a Durable Object Worker. Built and **launched** Advent Together: engine + API + UI + OG + privacy + product page. Verified: unit 8/8, Playwright e2e passed locally (with time travel) and against https://pb-group-advent.pages.dev; Search Console verified, sitemap submitted. Fixed 2 bugs found by e2e (US date range "1–December 24"; link field blocked the save without https://).
 - 2026-11-22 review: kept p5. URL 200, 0 console errors (headless Chromium, 390 px, 2026-11-22 ~03:40 UTC); Search Console 0 impressions 11-01→11-22; `/api/stats` 0 calendars, 0 joiners. Under 21 days live, so no traction verdict. Groups must set up before 1 Dec; drop to p3 after that.
+- 2026-11-22 builder (quality): fixed 7 bugs: (1) preview image was 317 KiB, over WhatsApp's ~300 KB limit; now og.jpg 77 KiB. (2) Unknown URLs returned the home page with 200; now a real 404 page. (3) "N doors still free" counted already-opened doors, also in the invite text. (4) Finished calendars still said "Invite… who should get a door". (5) 13 axe violations. (6) Closing a door sheet lost keyboard focus. (7) Images squashed on the phone product page (missing `height:auto`). Also: the join form can no longer double-submit, and "doors 2 and 3" wording. Verified: unit 8/8; e2e passed local + production; a11y 0 violations on 27 states locally and 15 live; GitHub Pages build for 4af6dc1 succeeded; product page links all 200. Metrics: still 0 calendars.

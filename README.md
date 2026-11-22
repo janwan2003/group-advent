@@ -28,6 +28,8 @@ echo TEST_HOOKS=1 > worker/.dev.vars          # enables the x-now clock header (
 npx wrangler pages dev --port 8890 --ip 127.0.0.1 --persist-to .wrangler/state
 npm run test:unit
 BASE=http://127.0.0.1:8890 node tests/e2e/run.mjs   # real Chromium, 6 contexts, time travel, screenshots in shots/
+BASE=http://127.0.0.1:8890 node tests/e2e/a11y.mjs  # axe-core WCAG 2.1 AA audit of 27 page states (phone + desktop)
+cp public/app.css docs/app.css                      # the GitHub Pages product page uses a copy of the app's CSS
 node tools/render-images.mjs                         # og.jpg + icons
 ```
 
@@ -37,5 +39,6 @@ set -a; . ../../.env; set +a
 (cd worker && npx wrangler deploy)        # only when worker/, lib/ or schema.sql changed
 npx wrangler pages deploy --branch main
 BASE=https://pb-group-advent.pages.dev node tests/e2e/run.mjs   # deletes its own calendar; skips time-travel steps
+BASE=https://pb-group-advent.pages.dev node tests/e2e/a11y.mjs  # 15 states live (no time travel)
 python3 scripts/gsc.py status             # Search Console
 ```

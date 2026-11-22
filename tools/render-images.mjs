@@ -1,4 +1,4 @@
-// Renders public/og.png (1200x630) from tools/og.html and PNG icons from public/icon.svg.
+// Renders public/og.jpg (JPEG: WhatsApp drops preview images over ~300 KB) (1200x630) from tools/og.html and PNG icons from public/icon.svg.
 import { chromium } from 'playwright-core';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import url from 'node:url';
 const root = path.join(os.homedir(), '.cache/ms-playwright');
@@ -9,7 +9,7 @@ const pub = path.join(here, '../public');
 const p = await b.newPage({ viewport: { width: 1200, height: 630 } });
 await p.goto('file://' + path.join(here, 'og.html'));
 await p.waitForTimeout(300);
-await p.screenshot({ path: path.join(pub, 'og.png') });
+await p.screenshot({ path: path.join(pub, 'og.jpg'), type: 'jpeg', quality: 88 });
 for (const s of [180, 512]) {
   const q = await b.newPage({ viewport: { width: s, height: s } });
   const svg = fs.readFileSync(path.join(pub, 'icon.svg'), 'utf8').replace('<svg ', `<svg width="${s}" height="${s}" `);

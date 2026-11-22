@@ -119,7 +119,7 @@ try {
   await ben.page.locator('#joinName').fill('Ben');
   await ben.page.getByRole('button', { name: 'Join', exact: true }).click();
   await ben.page.getByText('Ben · you').waitFor();
-  assert.match(await door(ben.page, 5).getAttribute('aria-label'), /taken/);
+  assert.match(await door(ben.page, 5).textContent(), /taken/);
   await door(ben.page, 5).click();
   await sheet(ben.page).getByRole('heading', { name: 'Taken: no peeking!' }).waitFor();
   assert.ok(!(await ben.page.content()).includes('sledge'), 'secret text not in page');
@@ -157,13 +157,19 @@ try {
   const html = await (await sam.page.request.get(`${BASE}/c/${calId}`)).text();
   assert.match(html, /<meta property="og:title" content="Kowalski family advent · Advent Together">/);
   assert.match(html, /og:description" content="Starts \w+ 1 Dec · 3 of 24 doors claimed · 4 people/);
+  const ogImg = html.match(/og:image" content="([^"]+)"/)[1];
+  const img = await sam.page.request.get(ogImg.replace(/^https?:\/\/[^/]+/, BASE));
+  assert.equal(img.status(), 200, 'preview image loads');
+  assert.ok((await img.body()).length < 300000, 'preview image under 300 KB (WhatsApp skips bigger ones)');
+  assert.equal((await sam.page.request.get(`${BASE}/no-such-page`)).status(), 404, 'unknown pages are a real 404');
 
   if (LOCAL) {
     step('time travel to 5 Dec: today’s door opens for Ben');
     await travel(ben.page, '2026-12-05T08:00:00+01:00');
     await ben.page.getByRole('heading', { name: 'Door 5 is open!' }).waitFor();
     assert.match(await door(ben.page, 5).getAttribute('class'), /today/);
-    assert.match(await door(ben.page, 6).getAttribute('aria-label'), /free, opens/);
+    assert.match(await door(ben.page, 6).textContent(), /free, opens/);
+    assert.match(await ben.page.locator('#progTxt').textContent(), /18 doors still free/, 'opened doors are not counted as free');
     await ben.page.getByRole('button', { name: 'Open door 5' }).click();
     await sheet(ben.page).getByRole('heading', { name: 'From Ana' }).waitFor();
     await sheet(ben.page).getByText('A memory from Ana').waitFor();
@@ -177,11 +183,13 @@ try {
     await sheet(ben.page).locator('#sheetX').click();
     assert.equal(await ben.page.getByRole('heading', { name: 'Door 5 is open!' }).count(), 0, 'today notice hides once seen');
 
-    step('empty door 1 opens with a fallback; Sam’s door 2 shows his name');
-    await door(ben.page, 1).click();
+    step('empty door 1 opens with a fallback (by keyboard); Sam’s door 2 shows his name');
+    await door(ben.page, 1).focus();
+    await ben.page.keyboard.press('Enter');
     await sheet(ben.page).getByRole('heading', { name: 'A surprise from us' }).waitFor();
     await sheet(ben.page).getByText(/from the Advent Together elves/).waitFor();
-    await sheet(ben.page).locator('#sheetX').click();
+    await ben.page.keyboard.press('Escape');
+    await ben.page.waitForFunction(() => document.activeElement && document.activeElement.dataset.day === '1');
     await door(ben.page, 2).click();
     await sheet(ben.page).getByRole('heading', { name: 'From Sam' }).waitFor();
     await sheet(ben.page).locator('#sheetX').click();
@@ -215,6 +223,9 @@ try {
     await travel(sam.page, '2026-12-26T10:00:00+01:00');
     await sam.page.getByText('That’s a wrap: every door is open').waitFor();
     assert.equal(await sam.page.locator('#board .door.open').count(), 24);
+    assert.match(await sam.page.locator('#progTxt').textContent(), /^2 of 24 doors came from the group/);
+    assert.equal(await sam.page.locator('#invite').textContent(), 'Share the calendar');
+    assert.match(await sam.page.locator('#you').textContent(), /Your door 2 has opened for the group/);
     await shot(sam.page, 'wrap-desktop.png');
     await sam.page.evaluate(() => localStorage.removeItem('ga:now'));
   }

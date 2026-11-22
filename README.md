@@ -28,7 +28,7 @@ echo TEST_HOOKS=1 > worker/.dev.vars          # enables the x-now clock header (
 npx wrangler pages dev --port 8890 --ip 127.0.0.1 --persist-to .wrangler/state
 npm run test:unit
 BASE=http://127.0.0.1:8890 node tests/e2e/run.mjs   # real Chromium, 6 contexts, time travel, screenshots in shots/
-node tools/render-images.mjs                         # og.png + icons
+node tools/render-images.mjs                         # og.jpg + icons
 ```
 
 ## Deploy

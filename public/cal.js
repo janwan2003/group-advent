@@ -29,7 +29,11 @@ const photoUrls = new Map();
 const tok = () => getToken(id);
 const link = () => `${location.origin}/c/${id}`;
 const plural = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+// "door 7", "doors 7 and 9", "doors 3, 7 and 9"
+const doorList = (days) => (days.length === 1 ? `door ${days[0]}` : `doors ${days.slice(0, -1).join(', ')} and ${days[days.length - 1]}`);
 const doorOf = (day) => S.doors[day - 1];
+// Doors someone can still claim: not opened yet and not taken.
+const freeDoors = () => S.doors.filter((d) => !d.open && !d.taken);
 
 async function load() {
   try {
@@ -67,8 +71,14 @@ function render() {
     h('span', { text: `A door opens at midnight (${cal.tz.replace(/_/g, ' ')})` })
   );
   $('#prog').style.width = `${Math.round((cal.filled / cal.days) * 100)}%`;
-  const free = cal.days - cal.claimed;
-  $('#progTxt').textContent = `${cal.filled} of ${cal.days} doors filled · ${plural(free, 'door', 'doors')} still free · ${plural(S.members.length, 'person', 'people')}`;
+  const free = freeDoors().length;
+  const ended = cal.opened >= cal.days;
+  const people = plural(S.members.length, 'person', 'people');
+  $('#progTxt').textContent = ended
+    ? `${cal.filled} of ${cal.days} doors came from the group · ${people}`
+    : `${cal.filled} of ${cal.days} doors filled · ${free ? `${plural(free, 'door', 'doors')} still free` : 'no doors left to claim'} · ${people}`;
+  $('#invite').textContent = ended ? 'Share the calendar' : 'Invite the group';
+  $('#inviteHint').textContent = ended ? 'Every door is open. Anyone with the link can look back through them.' : 'Send the link to everyone who should get a door.';
   renderNotices();
   renderBoard();
   $('#people').replaceChildren(...S.members.map((m) => h('li', { class: me && m.id === me.id ? 'me' : '' }, m.name + (m.isHost ? ' (made it)' : '') + (me && m.id === me.id ? ' · you' : ''))));
@@ -87,28 +97,34 @@ function renderNotices() {
   if (!me) {
     const inp = h('input', { type: 'text', id: 'joinName', maxlength: 30, placeholder: 'Your name', autocomplete: 'given-name', 'aria-label': 'Your name' });
     const err = h('p', { class: 'err', role: 'alert' });
-    const form = h('form', { class: 'joinform', onsubmit: (e) => { e.preventDefault(); doJoin(inp.value, err); } }, inp, h('button', { class: 'btn', type: 'submit', text: 'Join' }));
+    const joinBtn = h('button', { class: 'btn', type: 'submit', text: 'Join' });
+    const form = h('form', { class: 'joinform', onsubmit: async (e) => {
+      e.preventDefault();
+      if (joinBtn.disabled) return; // a double tap would join twice and then report the name as taken
+      joinBtn.disabled = true;
+      if (!(await doJoin(inp.value, err))) joinBtn.disabled = false;
+    } }, inp, joinBtn);
     box.append(h('div', { class: 'notice gold' },
-      h('h3', { text: `You’re invited to “${cal.title}”` }),
-      h('p', { text: cal.opened ? 'Open any door that has opened, no name needed. Join to react and to hide a surprise behind a door of your own.' : 'Type your name, pick a door and hide a surprise behind it for the group. Nobody sees it until its day.' }),
+      h('h2', { text: `You’re invited to “${cal.title}”` }),
+      h('p', { text: !freeDoors().length ? 'Open any door that has opened, no name needed. Join with your name to react.' : cal.opened ? 'Open any door that has opened, no name needed. Join to react and to hide a surprise behind a door of your own.' : 'Type your name, pick a door and hide a surprise behind it for the group. Nobody sees it until its day.' }),
       form, err));
   }
   if (justCreated && me) {
     box.append(h('div', { class: 'notice pine' },
-      h('h3', { text: 'Your calendar is ready 🎄' }),
+      h('h2', { text: 'Your calendar is ready 🎄' }),
       h('p', { text: 'Now send the link to the group chat so everyone can claim a door. Then claim one yourself: tap any door.' }),
       h('button', { class: 'btn alt small', type: 'button', onclick: invite, text: 'Send the link' })));
   }
   const td = todayDoor();
   if (td && cal.opened < cal.days && seenMax() < td.day) {
     box.append(h('div', { class: 'notice gold' },
-      h('h3', { text: `Door ${td.day} is open!` }),
+      h('h2', { text: `Door ${td.day} is open!` }),
       h('p', { text: td.filled ? `Today’s surprise is from ${td.from}.` : 'See what’s behind today’s door.' }),
       h('button', { class: 'btn small', type: 'button', onclick: () => openDoor(td.day), text: `Open door ${td.day}` })));
   }
   if (cal.opened >= cal.days) {
     box.append(h('div', { class: 'notice gold' },
-      h('h3', { text: 'That’s a wrap: every door is open ✨' }),
+      h('h2', { text: 'That’s a wrap: every door is open ✨' }),
       h('p', { text: `${cal.filled} of ${cal.days} doors came from the group. Scroll through them again, or start one for another group.` }),
       h('a', { class: 'btn small', href: '/#make', text: 'Make one for another group' })));
   }
@@ -116,14 +132,14 @@ function renderNotices() {
     const todo = S.doors.filter((d) => d.mine && !d.open && !d.filled);
     if (todo.length) {
       box.append(h('div', { class: 'notice' },
-        h('h3', { text: `You claimed door ${todo.map((d) => d.day).join(', ')} but haven’t filled it yet` }),
-        h('p', { class: 'muted', text: `It opens ${fmtDay(todo[0].date)}. If it’s still empty then, the group gets a surprise from us instead.` }),
+        h('h2', { text: `You claimed ${doorList(todo.map((d) => d.day))} but haven’t filled ${todo.length === 1 ? 'it' : 'them'} yet` }),
+        h('p', { class: 'muted', text: `Door ${todo[0].day} opens ${fmtDay(todo[0].date)}. If it’s still empty then, the group gets a surprise from us instead.` }),
         h('button', { class: 'btn small', type: 'button', onclick: () => openDoor(todo[0].day), text: `Fill door ${todo[0].day}` })));
     } else if (!S.doors.some((d) => d.mine && !d.open)) {
-      const free = S.doors.filter((d) => !d.open && !d.taken);
+      const free = freeDoors();
       if (free.length) {
         box.append(h('div', { class: 'notice' },
-          h('h3', { text: `${plural(free.length, 'door is', 'doors are')} still free` }),
+          h('h2', { text: `${plural(free.length, 'door is', 'doors are')} still free` }),
           h('p', { class: 'muted', text: 'Claim one and hide a surprise for everyone: a message, a joke, a song, an old photo.' }),
           h('button', { class: 'btn small', type: 'button', onclick: () => openDoor(free[0].day), text: `Claim door ${free[0].day}` })));
       }
@@ -143,7 +159,7 @@ function renderBoard() {
     const d = doorOf(day);
     const cls = ['door'];
     let tag = '';
-    let label = `Door ${day}`;
+    let label = '';
     if (d.open) {
       cls.push('open');
       label += d.filled ? `, open, from ${d.from}` : ', open';
@@ -162,8 +178,10 @@ function renderBoard() {
       label += ', free';
     }
     if (!d.open) label += `, opens ${fmtDay(d.date)}`;
-    const kids = d.open ? [h('span', { class: 'icon', 'aria-hidden': 'true', text: doorIcon(d) }), h('span', { class: 'num', text: day })] : [h('span', { class: 'num', text: day }), h('span', { class: 'tag', text: tag })];
-    return h('button', { class: cls.join(' '), type: 'button', 'aria-label': label, 'data-day': day, onclick: () => openDoor(day) }, ...kids);
+    // Visible text stays part of the accessible name ("Door 7 Dec 7, free, opens Mon, 7 Dec"), so voice control works.
+    const door = h('span', { class: 'sr', text: 'Door ' });
+    const kids = d.open ? [h('span', { class: 'icon', 'aria-hidden': 'true', text: doorIcon(d) }), door, h('span', { class: 'num', text: day })] : [door, h('span', { class: 'num', text: day }), h('span', { class: 'tag', text: tag })];
+    return h('button', { class: cls.join(' '), type: 'button', 'data-day': day, onclick: () => openDoor(day) }, ...kids, h('span', { class: 'sr', text: label }));
   }));
 }
 
@@ -174,7 +192,12 @@ function renderYou() {
   if (!me) return;
   box.append(h('h2', { text: 'You' }));
   const mine = S.doors.filter((d) => d.mine);
-  box.append(h('p', { class: 'muted', text: mine.length ? `You’re hiding surprises behind door ${mine.map((d) => d.day).join(', ')}.` : 'You haven’t claimed a door yet.' }));
+  const waiting = mine.filter((d) => !d.open).map((d) => d.day);
+  const opened = mine.filter((d) => d.open).map((d) => d.day);
+  const lines = [];
+  if (waiting.length) lines.push(`You’re hiding ${waiting.length === 1 ? 'a surprise' : 'surprises'} behind ${doorList(waiting)}.`);
+  if (opened.length) lines.push(`Your ${doorList(opened)} ${opened.length === 1 ? 'has' : 'have'} opened for the group.`);
+  box.append(h('p', { class: 'muted', text: lines.join(' ') || 'You haven’t claimed a door yet.' }));
   const actions = h('div', { class: 'bar' });
   actions.append(h('button', { class: 'btn ghost small', type: 'button', onclick: async () => {
     const ok = await copy(`${link()}#k=${encodeURIComponent(tok())}`);
@@ -211,10 +234,12 @@ async function doJoin(name, err) {
 function invite() {
   justCreated = false;
   const { cal } = S;
-  const free = cal.days - cal.claimed;
-  const text = cal.opened && cal.opened < cal.days
-    ? `Door ${cal.opened} of “${cal.title}” is open 🎄 Come see, and pick a door to hide a surprise for the group:`
-    : `Join “${cal.title}” 🎄 Pick a door and hide a surprise behind it for the group. ${free} of ${cal.days} doors still free:`;
+  const free = freeDoors().length;
+  const text = cal.opened >= cal.days
+    ? `All ${cal.days} doors of “${cal.title}” are open 🎄 Look back through them:`
+    : cal.opened
+      ? `Door ${cal.opened} of “${cal.title}” is open 🎄 Come see${free ? ', and pick a door to hide a surprise for the group' : ''}:`
+      : `Join “${cal.title}” 🎄 Pick a door and hide a surprise behind it for the group. ${free} of ${cal.days} doors still free:`;
   share({ title: cal.title, text, url: link() });
   if (S.me) renderNotices();
 }
@@ -245,7 +270,15 @@ function closeSheet() { if (sheet.open) sheet.close(); }
 $('#sheetX').addEventListener('click', closeSheet);
 sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
 
+// The board re-renders while a sheet is open, so give focus back to the door by its day, not the element.
+let lastDay = null;
+sheet.addEventListener('close', () => setTimeout(() => {
+  const el = lastDay && document.querySelector(`#board [data-day="${lastDay}"]`);
+  if (el && (!document.activeElement || document.activeElement === document.body)) el.focus({ preventScroll: true });
+}));
+
 function openDoor(day) {
+  lastDay = day;
   const d = doorOf(day);
   if (d.open) return showOpen(d);
   if (d.mine) return showEditor(d);
@@ -311,7 +344,7 @@ function showOpen(d) {
 }
 
 function showTaken(d) {
-  const freeLater = S.doors.find((x) => !x.open && !x.taken);
+  const freeLater = freeDoors()[0];
   const kids = [
     h('div', { class: 'kicker', text: `Door ${d.day} · opens ${fmtDay(d.date)}` }),
     h('h2', { id: 'sheetTitle', text: 'Taken: no peeking!' }),

@@ -4,7 +4,7 @@ stage: launched
 priority: 5
 url: https://pb-group-advent.pages.dev
 repo: https://github.com/janwan2003/group-advent
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # group-advent
@@ -141,3 +141,4 @@ printable keepsake book of the finished calendar. Never paywall joining, opening
   Timing risk: advent starts 2026-12-01.
 - 2026-11-21 review: raised p3→p5. Advent starts 2026-12-01, 10 days from now: it must be live by ~25 Nov for groups to set it up, or the thesis waits a year. Build it next, as a one-session MVP.
 - 2026-11-21 builder: re-checked evidence (25Days, PollUnit, Advent Calendar Creator are publisher- or one-creator calendars; gap holds). D1 limit hit, so used a Durable Object Worker. Built and **launched** Advent Together: engine + API + UI + OG + privacy + product page. Verified: unit 8/8, Playwright e2e passed locally (with time travel) and against https://pb-group-advent.pages.dev; Search Console verified, sitemap submitted. Fixed 2 bugs found by e2e (US date range "1–December 24"; link field blocked the save without https://).
+- 2026-11-22 review: kept p5. URL 200, 0 console errors (headless Chromium, 390 px, 2026-11-22 ~03:40 UTC); Search Console 0 impressions 11-01→11-22; `/api/stats` 0 calendars, 0 joiners. Under 21 days live, so no traction verdict. Groups must set up before 1 Dec; drop to p3 after that.
